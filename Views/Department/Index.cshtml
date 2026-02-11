@@ -16,6 +16,7 @@
     <table id="departmentTable" class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
+                <th></th>
                 <th>Id</th>
                 <th>Name</th>
                 <th>Actions</th>
@@ -69,6 +70,12 @@
         var table = $('#departmentTable').DataTable({
             ajax: '/Department/GetDepartments',
             columns: [
+                {
+                    className: 'dt-control',
+                    orderable: false,
+                    data: null,
+                    defaultContent: '+'
+                },
                 { data: 'DepartmentId' },
                 { data: 'Name' },
                 {
@@ -98,6 +105,19 @@
                     }
                 }
             ]
+        });
+
+        $('#departmentTable tbody').on('click', 'td.dt-control', function () {
+            var tr = $(this).closest('tr');
+            var btn = $(this);
+
+            if (btn.text() == '+') {
+                tr.nextAll().hide();
+                btn.text('−');
+            } else {
+                $('#departmentTable tbody tr').show();
+                $('#departmentTable tbody td.dt-control').text('+');
+            }
         });
 
         // Open Add Department Modal
