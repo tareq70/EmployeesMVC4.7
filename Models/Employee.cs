@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmployeesMVC4._7.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,6 +20,7 @@ namespace EmployeesMVC4._7.Models
 
         [EmailAddress]
         public string Email { get; set; }
+        public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
 
         public int DepartmentId { get; set; }
 

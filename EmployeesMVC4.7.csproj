@@ -130,12 +130,17 @@
     <Compile Include="Controllers\DepartmentController.cs" />
     <Compile Include="Controllers\EmployeeController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Enums\EmployeeStatus.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202602101209237_Initial Create.cs" />
     <Compile Include="Migrations\202602101209237_Initial Create.Designer.cs">
       <DependentUpon>202602101209237_Initial Create.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202602111457122_add public enum EmployeeStatus.cs" />
+    <Compile Include="Migrations\202602111457122_add public enum EmployeeStatus.Designer.cs">
+      <DependentUpon>202602111457122_add public enum EmployeeStatus.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AppDbContext.cs" />
@@ -230,6 +235,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202602101209237_Initial Create.resx">
       <DependentUpon>202602101209237_Initial Create.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202602111457122_add public enum EmployeeStatus.resx">
+      <DependentUpon>202602111457122_add public enum EmployeeStatus.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
