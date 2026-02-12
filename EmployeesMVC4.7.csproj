@@ -142,6 +142,10 @@
     <Compile Include="Migrations\202602111457122_add public enum EmployeeStatus.Designer.cs">
       <DependentUpon>202602111457122_add public enum EmployeeStatus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202602121202139_AddEmployeeLocation.cs" />
+    <Compile Include="Migrations\202602121202139_AddEmployeeLocation.Designer.cs">
+      <DependentUpon>202602121202139_AddEmployeeLocation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AppDbContext.cs" />
     <Compile Include="Models\Department.cs" />
@@ -238,6 +242,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202602111457122_add public enum EmployeeStatus.resx">
       <DependentUpon>202602111457122_add public enum EmployeeStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202602121202139_AddEmployeeLocation.resx">
+      <DependentUpon>202602121202139_AddEmployeeLocation.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

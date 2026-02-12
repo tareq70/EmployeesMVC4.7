@@ -26,5 +26,8 @@ namespace EmployeesMVC4._7.Models
 
         [ForeignKey("DepartmentId")]
         public virtual Department Department { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
     }
 }

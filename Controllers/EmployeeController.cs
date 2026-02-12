@@ -27,20 +27,29 @@ namespace EmployeesMVC4._7.Controllers
                                     e.Email,
                                     e.DepartmentId,
                                     Status = (int)e.Status,
+                                    e.Latitude,
+                                    e.Longitude,
                                     DepartmentName = e.Department.Name
                                 }).ToList();
             return Json(new { data = employees }, JsonRequestBehavior.AllowGet);
         }
         [HttpPost]
-        public JsonResult AddEmployee(string name, string email, int departmentId)
+        public JsonResult AddEmployee(string name, string email, int departmentId, double latitude, double longitude)
         {
-            db.Employees.Add(new Employee { Name = name, Email = email, DepartmentId = departmentId });
+            db.Employees.Add(new Employee
+            {
+                Name = name,
+                Email = email,
+                DepartmentId = departmentId,
+                Longitude = longitude,
+                Latitude = latitude
+            });
             db.SaveChanges();
             return Json(new { success = true });
         }
 
         [HttpPost]
-        public JsonResult EditEmployee(int id, string name, string email, int departmentId)
+        public JsonResult EditEmployee(int id, string name, string email, int departmentId, double latitude, double longitude)
         {
             var emp = db.Employees.Find(id);
             if (emp == null) return Json(new { success = false, message = "Employee not found" });
@@ -48,6 +57,8 @@ namespace EmployeesMVC4._7.Controllers
             emp.Name = name;
             emp.Email = email;
             emp.DepartmentId = departmentId;
+            emp.Latitude = latitude;
+            emp.Longitude = longitude;
 
             db.SaveChanges();
             return Json(new { success = true });
