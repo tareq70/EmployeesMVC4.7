@@ -217,34 +217,37 @@
                 zoom: 7
             });
 
-            new google.maps.Marker({
+            selectedMarker = new google.maps.Marker({
                 position: userLocation,
                 map: map,
                 title: "Your Location",
                 icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
             });
 
+
             loadEmployeeMarkers(function (employees) {
                 findNearestEmployeesFromPoint(employees, userLocation.lat, userLocation.lng);
             });
 
-            // Change location on map click
             map.addListener("click", function (e) {
                 selectedLat = e.latLng.lat();
                 selectedLng = e.latLng.lng();
                 userLocation = { lat: selectedLat, lng: selectedLng };
 
                 if (selectedMarker) selectedMarker.setMap(null);
+
                 selectedMarker = new google.maps.Marker({
                     position: userLocation,
                     map: map,
-                    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                    title: "Your Location"
                 });
 
                 loadEmployeeMarkers(function (employees) {
                     findNearestEmployeesFromPoint(employees, selectedLat, selectedLng);
                 });
             });
+
         }
 
         // load Employee Markers
@@ -279,7 +282,7 @@
         // find Nearest Employees From Point
         function findNearestEmployeesFromPoint(employees, lat, lng) {
             employees.forEach(emp => {
-                if (emp.Latitude && emp.Longitude) {
+                if (emp.Status != 2 && emp.Status !=3 && emp.Latitude && emp.Longitude) {
                     emp.Distance = google.maps.geometry.spherical.computeDistanceBetween(
                         new google.maps.LatLng(lat, lng),
                         new google.maps.LatLng(emp.Latitude, emp.Longitude)
@@ -293,16 +296,51 @@
             showNearestInTable(nearest);
         }
 
+        var nearestMarkers = [];
+        var currentInfoWindow = null; // ← نضيف متغير لحفظ InfoWindow المفتوح
+
         function showNearestOnMap(list) {
+            nearestMarkers.forEach(m => m.setMap(null));
+            nearestMarkers = [];
+
             list.forEach(emp => {
-                new google.maps.Marker({
-                    position: { lat: parseFloat(emp.Latitude), lng: parseFloat(emp.Longitude) },
-                    map: map,
-                    title: emp.Name,
-                    icon: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
-                });
+                if (emp.Status != 2 && emp.Status != 3 && emp.Latitude && emp.Longitude) {
+                    var m = new google.maps.Marker({
+                        position: { lat: parseFloat(emp.Latitude), lng: parseFloat(emp.Longitude) },
+                        map: map,
+                        title: emp.Name,
+                        label: {
+                            text: emp.Name,
+                            color: "black",
+                            fontSize: "20px",
+                            fontWeight: "bold"
+                        },
+                        icon: emp.Status == 1
+                            ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                            : 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                    });
+
+                    var infoContent = `
+                <div>
+                    <h5>${emp.Name}</h5>
+                    <p><strong>Email:</strong> ${emp.Email}</p>
+                    <p><strong>Department:</strong> ${emp.DepartmentName}</p>
+                    <p><strong>Status:</strong> ${emp.Status == 1 ? 'Active' : 'Inactive'}</p>
+                </div>
+            `;
+                    var infoWindow = new google.maps.InfoWindow({ content: infoContent });
+
+                    m.addListener('click', function () {
+                        if (currentInfoWindow) currentInfoWindow.close();
+                        infoWindow.open(map, m);
+                        currentInfoWindow = infoWindow; 
+                    });
+
+                    nearestMarkers.push(m);
+                }
             });
         }
+
 
         function showNearestInTable(list) {
             var tbody = $("#nearestTable tbody");
