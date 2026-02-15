@@ -1,0 +1,95 @@
+﻿@model EmployeesMVC4._7.View_Models.ChargeViewModel
+
+@{
+    ViewBag.Title = "Payment Status";
+
+    var statusColor = "dark";
+    var statusText = "❓ Unknown Status";
+
+    switch (Model.Status?.ToUpper())
+    {
+        case "CAPTURED":
+            statusColor = "success";
+            statusText = "✅ Payment Successful";
+            break;
+
+        case "INITIATED":
+        case "IN_PROGRESS":
+            statusColor = "info";
+            statusText = "⏳ Payment Pending";
+            break;
+
+        case "FAILED":
+        case "CANCELED":
+            statusColor = "danger";
+            statusText = "❌ Payment Failed";
+            break;
+
+        case "DECLINED":
+            statusColor = "warning";
+            statusText = "⚠ Payment Declined";
+            break;
+
+        case "REFUNDED":
+            statusColor = "secondary";
+            statusText = "💰 Payment Refunded";
+            break;
+
+        case "EXPIRED":
+            statusColor = "dark";
+            statusText = "⌛ Payment Expired";
+            break;
+
+        case "AUTHORIZED":
+            statusColor = "primary";
+            statusText = "🔒 Payment Authorized";
+            break;
+        case "VOIDED":
+            statusColor = "secondary";
+            statusText = "🚫 Payment Voided";
+            break;
+        case "CHARGEBACK":
+            statusColor = "danger";
+            statusText = "⚠ Payment Chargeback";
+            break;
+
+        default:
+            statusColor = "dark";
+            statusText = $"❓ {Model.Status ?? "Unknown Status"}";
+            break;
+    }
+
+    var responseMsg = Model.Response?.Message ?? "No details from payment gateway";
+    var responseCode = Model.Response?.Code ?? "N/A";
+}
+
+<div class="container mt-5 text-center">
+
+    <div class="card shadow-lg p-4 rounded-4">
+        <h2 class="text-@statusColor mb-3">@statusText</h2>
+
+        <p><strong>Amount:</strong> @Model.Amount @Model.Currency</p>
+
+        <p>
+            <strong>Customer:</strong>
+            @Model.Customer?.FirstName
+            (@Model.Customer?.Email)
+        </p>
+
+        <p>
+            <strong>Phone:</strong>
+            +@Model.Customer?.Phone?.CountryCode
+            @Model.Customer?.Phone?.Number
+        </p>
+
+        <p><strong>Charge ID:</strong> @Model.Id</p>
+
+        <hr />
+
+        <p class="text-muted">
+            <strong>Gateway Message:</strong><br />
+            @responseMsg    @responseCode
+        </p>
+    </div>
+
+</div>
