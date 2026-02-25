@@ -1,0 +1,116 @@
+﻿@model EmployeesMVC4._7.View_Models.InvoiceCallbackVM
+
+
+<div class="container mt-5">
+    <h2>Invoice Status: @(Model?.Status ?? "Unknown")</h2>
+    <p><strong>Invoice ID:</strong> @(Model?.Id ?? "N/A")</p>
+    <p><strong>Invoice Number:</strong> @(Model?.InvoiceNumber ?? "N/A")</p>
+    <p><strong>Amount:</strong> @(Model?.Amount ?? 0) @(Model?.Currency ?? "")</p>
+    <p><strong>Description:</strong> @(Model?.Description ?? "N/A")</p>
+    <p>
+        <strong>Invoice URL:</strong>
+        @if (!string.IsNullOrEmpty(Model?.Url))
+        {
+            <a href="@Model.Url" target="_blank">View Invoice</a>
+        }
+        else
+        {
+            <span>N/A</span>
+        }
+    </p>
+
+    <h4>Customer Info</h4>
+    <p>
+        @(Model?.Customer?.First_Name ?? "")
+        @(Model?.Customer?.Middle_Name ?? "")
+        @(Model?.Customer?.Last_Name ?? "")
+    </p>
+    <p>Email: @(Model?.Customer?.Email ?? "N/A")</p>
+    <p>
+        Phone:
+        +@(Model?.Customer?.Phone?.Country_Code ?? "")
+        @(Model?.Customer?.Phone?.Number ?? "")
+    </p>
+
+    <h4>Order Info</h4>
+    <p>Order ID: @(Model?.Order?.Id ?? "N/A")</p>
+    <p>Amount: @(Model?.Order?.Amount ?? 0) @(Model?.Order?.Currency ?? "")</p>
+
+    @if (Model?.Order?.Items != null && Model.Order.Items.Any())
+    {
+        <h6>Items:</h6>
+        <ul>
+            @foreach (var item in Model.Order.Items)
+            {
+                <li>
+                    @(item.Name ) - @(item.Amount) @(Model.Order.Currency) (Qty: @(item.Quantity))
+                </li>
+            }
+        </ul>
+    }
+
+    <h4>Charge Info</h4>
+    <p>Statement Descriptor: @(Model?.Charge?.Statement_Descriptor ?? "Not Available")</p>
+    <p>Receipt Email: @(Model?.Charge?.Receipt?.Email == true ? "Yes" : "No")</p>
+    <p>Receipt SMS: @(Model?.Charge?.Receipt?.Sms == true ? "Yes" : "No")</p>
+
+    <p>
+        <strong>Charge Status:</strong>
+        @{
+            string statusMessage = "No charge information";
+            string code = Model?.Charge?.StatusCode;
+
+            if (!string.IsNullOrEmpty(code))
+            {
+                if (code == "CAPTURED") { statusMessage = "Captured"; }
+                else if (code == "INITIATED") { statusMessage = "Initiated"; }
+                else if (code == "ABANDONED") { statusMessage = "Abandoned"; }
+                else if (code == "CANCELLED") { statusMessage = "Cancelled"; }
+                else if (code == "DECLINED") { statusMessage = "Declined"; }
+                else if (code == "FAILED") { statusMessage = "Failed"; }
+                else if (code == "VOID") { statusMessage = "Void"; }
+                else if (code == "TIMEDOUT") { statusMessage = "Timed Out"; }
+                else if (code == "AUTHORIZED") { statusMessage = "Authorized"; }
+                else { statusMessage = code; } 
+            }
+        }
+        @statusMessage
+    </p>
+
+
+    <h4>Track Info</h4>
+    <p>Track ID: @(Model?.Track?.Id ?? "N/A")</p>
+    <p>Status: @(Model?.Track?.Status ?? "N/A")</p>
+
+    @foreach (var act in Model.Track.Activity.OrderBy(a => a.Created))
+    {
+        <li>
+            @(act.Type ?? "N/A") -
+            @(act.Created != 0
+            ? DateTimeOffset.FromUnixTimeMilliseconds(act.Created)
+                .ToOffset(TimeSpan.FromHours(3))
+                .ToString("g")
+            : "N/A")
+        </li>
+    }
+
+    @if (Model?.Errors != null && Model.Errors.Any())
+    {
+        <div class="alert alert-danger mt-3">
+            <h5>Errors:</h5>
+            <ul>
+                @foreach (var err in Model.Errors)
+                {
+                    <li>@err.Code - @err.Description</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>Error:</strong> @ViewBag.Error
+        </div>
+    }
+</div>

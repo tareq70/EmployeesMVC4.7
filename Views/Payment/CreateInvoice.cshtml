@@ -1,0 +1,61 @@
+﻿@model EmployeesMVC4._7.View_Models.InvoiceCreateVM
+
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-4">
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0">Create New Invoice</h4>
+        </div>
+
+        <div class="card-body p-4">
+
+            @using (Html.BeginForm("CreateInvoice", "Payment", FormMethod.Post))
+            {
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name</label>
+                        <input class="form-control" name="FirstName" placeholder="Enter first name" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input class="form-control" name="LastName" placeholder="Enter last name" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" name="Email" placeholder="Enter email" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Country Code</label>
+                        <input class="form-control" name="CountryCode" value="20" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Phone</label>
+                        <input class="form-control" name="Phone" placeholder="Enter phone number" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Amount</label>
+                        <input class="form-control" name="Amount" placeholder="Enter amount" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Description</label>
+                        <input class="form-control" name="Description" placeholder="Enter invoice description" />
+                    </div>
+
+                </div>
+
+                <div class="text-center mt-3">
+                    <button class="btn btn-success px-5">
+                        Create Invoice
+                    </button>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

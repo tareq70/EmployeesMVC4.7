@@ -152,6 +152,8 @@
     <Compile Include="Models\Department.cs" />
     <Compile Include="Models\Employee.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="View Models\InvoiceCallbackVM.cs" />
+    <Compile Include="View Models\InvoiceCreateVM.cs" />
     <Compile Include="View Models\PaymentViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +211,8 @@
     <Content Include="Views\Employee\Index.cshtml" />
     <Content Include="Views\Payment\Index.cshtml" />
     <Content Include="Views\Payment\Callback.cshtml" />
+    <Content Include="Views\Payment\CreateInvoice.cshtml" />
+    <Content Include="Views\Payment\InvoiceCallback.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -103,8 +103,6 @@ namespace EmployeesMVC4._7.Controllers
 
             return View("Callback", charge);
         }
-
-
         private async Task<ChargeViewModel> GetChargeFromTap(string chargeId)
         {
             using (var client = new HttpClient())
@@ -127,6 +125,286 @@ namespace EmployeesMVC4._7.Controllers
                 return charge;
             }
         }
+        [HttpGet]
+        public ActionResult CreateInvoice()
+        {
+            return View();
+        }
 
+
+        [HttpPost]
+        public async Task<ActionResult> CreateInvoice(InvoiceCreateVM model)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TapSecretKey);
+
+                var data = new
+                {
+                    draft = false,
+                    due = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeMilliseconds(),
+                    expiry = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeMilliseconds(),
+
+                    description = model.Description,
+                    mode = "INVOICE",
+
+                    notifications = new
+                    {
+                        channels = new[] { "SMS", "EMAIL" },
+                        dispatch = true
+                    },
+
+                    currencies = new[] { model.Currency },
+
+                    charge = new
+                    {
+                        receipt = new
+                        {
+                            email = true,
+                            sms = true
+                        }
+                    },
+
+                    customer = new
+                    {
+                        first_name = model.FirstName,
+                        last_name = model.LastName,
+                        email = model.Email,
+                        phone = new
+                        {
+                            country_code = model.CountryCode,
+                            number = model.Phone
+                        }
+                    },
+
+                    order = new
+                    {
+                        amount = model.Amount,
+                        currency = model.Currency,
+
+                        items = new[]
+                        {
+                            new
+                            {
+                                name = model.Description ?? "Item",
+                                amount = model.Amount,
+                                currency = model.Currency,
+                                quantity = 1
+                            }
+                        }
+                    },
+                    redirect = new
+                    {
+                        url = "https://localhost:44350/payment/InvoiceCallback"
+                    },
+
+                    reference = new
+                    {
+                        invoice = "INV_" + DateTime.Now.Ticks,
+                        order = "ORD_" + DateTime.Now.Ticks
+                    }
+                };
+                
+                var json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync("https://api.tap.company/v2/invoices", content);
+                var responseJson = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                    return Content("Tap Error: " + responseJson);
+
+                dynamic invoice = JsonConvert.DeserializeObject(responseJson);
+
+                string paymentUrl = invoice.url;
+
+                return Redirect(paymentUrl);
+            }
+        }
+
+        //[HttpGet]
+        //[HttpPost]
+        //public async Task<ActionResult> InvoiceCallback()
+        //{
+        //    var invoiceId = Request.QueryString["invoice_id"]
+        //                    ?? Request.QueryString["tap_id"]
+        //                    ?? Request.QueryString["id"];
+
+        //    if (string.IsNullOrEmpty(invoiceId))
+        //        return Content("Invoice ID missing");
+
+        //    using (var client = new HttpClient())
+        //    {
+        //        client.DefaultRequestHeaders.Authorization =
+        //            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TapSecretKey);
+
+        //        var response = await client.GetAsync($"https://api.tap.company/v2/invoices/{invoiceId}");
+        //        if (!response.IsSuccessStatusCode)
+        //            return Content("Tap Error: " + await response.Content.ReadAsStringAsync());
+
+        //        var json = await response.Content.ReadAsStringAsync();
+
+        //        System.Diagnostics.Debug.WriteLine("INVOICE JSON: " + json);
+
+        //        //var json = await response.Content.ReadAsStringAsync();
+        //        //System.Diagnostics.Debug.WriteLine("INVOICE JSON: " + json);
+        //        //return Content(json);
+
+        //        dynamic invoiceRaw = JsonConvert.DeserializeObject(json);
+        //        var invoice = JsonConvert.DeserializeObject<InvoiceCallbackVM>(json);
+
+        //        string chargeId = invoiceRaw?.charge?.id ?? invoiceRaw?.charges?[0]?.id;
+
+        //        if (!string.IsNullOrEmpty(chargeId))
+        //        {
+        //            var chargeResponse = await client.GetAsync($"https://api.tap.company/v2/charges/{chargeId}");
+        //            if (chargeResponse.IsSuccessStatusCode)
+        //            {
+        //                var chargeJson = await chargeResponse.Content.ReadAsStringAsync();
+        //                System.Diagnostics.Debug.WriteLine("CHARGE JSON: " + chargeJson);
+
+        //                dynamic chargeData = JsonConvert.DeserializeObject(chargeJson);
+        //                invoice.Charge = new ChargeInfo
+        //                {
+        //                    StatusCode = chargeData.status,
+        //                    Statement_Descriptor = chargeData.statement_descriptor,
+        //                    Receipt = new ReceiptInfo
+        //                    {
+        //                        Email = chargeData.receipt?.email ?? false,
+        //                        Sms = chargeData.receipt?.sms ?? false
+        //                    }
+        //                };
+        //            }
+        //        }
+
+        //        if (invoice.Charge == null)
+        //            invoice.Charge = new ChargeInfo { StatusCode = "Pending" };
+
+        //        if (invoice.Customer == null)
+        //            invoice.Customer = new CustomerInfoInvoice { Phone = new PhoneInfo() };
+        //        else if (invoice.Customer.Phone == null)
+        //            invoice.Customer.Phone = new PhoneInfo();
+
+        //        return View("InvoiceCallback", invoice);
+        //    }
+        //}
+        public async Task<ActionResult> InvoiceCallback()
+        {
+            var invoiceId = Request.QueryString["invoice_id"]
+                            ?? Request.QueryString["tap_id"]
+                            ?? Request.QueryString["id"];
+
+            if (string.IsNullOrEmpty(invoiceId))
+                return Content("Invoice ID missing");
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TapSecretKey);
+
+                var response = await client.GetAsync($"https://api.tap.company/v2/invoices/{invoiceId}");
+                if (!response.IsSuccessStatusCode)
+                    return Content("Tap Error: " + await response.Content.ReadAsStringAsync());
+
+                var json = await response.Content.ReadAsStringAsync();
+                dynamic invoiceRaw = JsonConvert.DeserializeObject(json);
+                var invoice = JsonConvert.DeserializeObject<InvoiceCallbackVM>(json);
+
+                string chargeId = invoiceRaw?.transactions?[0]?.id;
+                
+
+                if (!string.IsNullOrEmpty(chargeId))
+                {
+                    var chargeResponse = await client.GetAsync($"https://api.tap.company/v2/charges/{chargeId}");
+                    if (chargeResponse.IsSuccessStatusCode)
+                    {
+                        var chargeJson = await chargeResponse.Content.ReadAsStringAsync();
+                        dynamic chargeData = JsonConvert.DeserializeObject(chargeJson);
+
+                        invoice.Charge = new ChargeInfo
+                        {
+                            StatusCode = chargeData.status,
+                            Statement_Descriptor = chargeData.statement_descriptor,
+                            Receipt = new ReceiptInfo
+                            {
+                                Email = chargeData.receipt?.email ?? false,
+                                Sms = chargeData.receipt?.sms ?? false
+                            }
+                        };
+                    }
+                }
+
+                if (invoice.Charge == null)
+                    invoice.Charge = new ChargeInfo { StatusCode = "Pending" };
+
+                if (invoice.Customer == null)
+                    invoice.Customer = new CustomerInfoInvoice { Phone = new PhoneInfo() };
+                else if (invoice.Customer.Phone == null)
+                    invoice.Customer.Phone = new PhoneInfo();
+
+                if (invoice.Track?.Activity != null)
+                {
+                    invoice.Track.Activity = invoice.Track.Activity
+                        .OrderBy(a => a.Created)
+                        .ToList();
+                }
+                return View("InvoiceCallback", invoice);
+            }
+        }
+        private async Task<ChargeInfo> GetChargeFromInvoice(string invoiceId)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TapSecretKey);
+
+                var response = await client.GetAsync($"https://api.tap.company/v2/charges?invoice={invoiceId}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ChargeInfo
+                    {
+                        StatusCode = "Pending",
+                        Statement_Descriptor = "Pending",
+                        Receipt = new ReceiptInfo
+                        {
+                            Email = false,
+                            Sms = false
+                        }
+                    };
+                }
+
+                var jsonCharge = await response.Content.ReadAsStringAsync();
+               
+                dynamic chargesList = JsonConvert.DeserializeObject(jsonCharge);
+
+                if (chargesList?.data != null && chargesList.data.Count > 0)
+                {
+                    var firstCharge = chargesList.data[0];
+
+                    return new ChargeInfo
+                    {
+                        StatusCode = firstCharge.status,
+                        Statement_Descriptor = firstCharge.statement_descriptor,
+                        Receipt = new ReceiptInfo
+                        {
+                            Email = firstCharge.receipt?.email ?? false,
+                            Sms = firstCharge.receipt?.sms ?? false
+                        }
+                    };
+                }
+                return new ChargeInfo
+                {
+                    StatusCode = "Pending",
+                    Statement_Descriptor = "Pending",
+                    Receipt = new ReceiptInfo
+                    {
+                        Email = false,
+                        Sms = false
+                    }
+                };
+            }
+        }
     }
 }
